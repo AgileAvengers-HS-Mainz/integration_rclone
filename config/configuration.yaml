@@ -6,3 +6,6 @@ logger:
   default: info
   logs:
     custom_components.integration_rclone: debug
+
+# configuration.yaml for tasks service entry
+tasks_service:
