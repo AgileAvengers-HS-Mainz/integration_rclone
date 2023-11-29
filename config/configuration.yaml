@@ -7,5 +7,5 @@ logger:
   logs:
     custom_components.integration_rclone: debug
 
-# configuration.yaml for tasks service entry
-tasks_service:
+# Configuration for integration_rclone entry
+integration_rclone:
