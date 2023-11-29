@@ -4,11 +4,13 @@ For more details about this integration, please refer to
 https://github.com/AgileAvengers-FH-Mainz/integration_rclone
 """
 from __future__ import annotations
+import json
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+import requests
 
 from .api import IntegrationRcloneApiClient
 from .const import DOMAIN
@@ -53,3 +55,52 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload config entry."""
     await async_unload_entry(hass, entry)
     await async_setup_entry(hass, entry)
+
+def setup(hass, config):
+    """Set up is called when Home Assistant is loading our component."""
+
+    # Getting tasks data
+    tasks_data = get_tasks_data()
+
+    # Creating a service for each task
+    create_handlers(tasks_data)
+
+    def handle_hello(call):
+        """Handle the service call."""
+
+    # Registering the services
+    hass.services.register(DOMAIN, "hello", handle_hello)
+    for task in tasks_data:
+        hass.services.register(DOMAIN, task["name"], "handle_" + task["name"])
+
+    # Return boolean to indicate that initialization was successful.
+    return True
+
+def get_tasks_data():
+    """Get tasks data using API"""
+
+    # API-endpoint
+    url = "http://192.168.178.65:3000/api/tasks"
+
+    # Sending get request and saving the response as response object
+    response = requests.get(url)
+
+    # Parsing the json content into a list
+    parsed_tasks_data = json.loads(response.text)
+
+    # Replacing any spaces with underscores in each task name
+    for task in parsed_tasks_data:
+        task["name"] = task["name"].replace(' ', '_')
+
+    return parsed_tasks_data
+
+# Creating service handlers dynamically usinc exec and globals()
+# It's generally not recommended due to security risks associated with
+# executing arbitrary code. However, I will go for this approach for now.
+def create_handlers(list_of_tasks):
+    for task in list_of_tasks:
+        # Define the function string using task name
+        function_string = f"def handle_{task['name']}(call):\n    print('Hello!')"
+
+        # Execute the function string
+        exec(function_string, globals())
