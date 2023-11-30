@@ -5,22 +5,41 @@ https://github.com/AgileAvengers-FH-Mainz/integration_rclone
 """
 from __future__ import annotations
 import json
+import time
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+
+import voluptuous as vol
+import homeassistant.helpers.config_validation as cv
+
 import requests
 
 from .api import IntegrationRcloneApiClient
 from .const import DOMAIN
 from .coordinator import RcloneDataUpdateCoordinator
 
+
+
 PLATFORMS: list[Platform] = [
     Platform.SENSOR,
     Platform.BINARY_SENSOR,
     Platform.SWITCH,
 ]
+
+CONF_URL = "url"
+
+STATE_RUNNING = "Running"
+STATE_DONE = "Done"
+
+# Checking if all mandatory configuration variables are provided ('url' in our case).
+# If not, the setup of our integration should fail.
+# We use voluptuous as a helper to achieve this.
+CONFIG_SCHEMA = vol.Schema(
+    {DOMAIN: vol.Schema({vol.Required(CONF_URL): cv.string,})}, extra=vol.ALLOW_EXTRA
+)
 
 
 # https://developers.home-assistant.io/docs/config_entries_index/#setting-up-an-entry
@@ -61,8 +80,11 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
 def setup(hass, config):
     """Set up is called when Home Assistant is loading our component."""
 
+    # API-endpoint from the configuration.yaml file
+    url = config[DOMAIN].get(CONF_URL)
+
     # Getting tasks data
-    tasks_data = get_tasks_data()
+    tasks_data = get_tasks_data(url)
 
     # Creating a service for each task
     create_handlers(tasks_data)
@@ -75,11 +97,8 @@ def setup(hass, config):
     # Return boolean to indicate that initialization was successful.
     return True
 
-def get_tasks_data():
+def get_tasks_data(url):
     """Get tasks data using API"""
-
-    # API-endpoint
-    url = "http://192.168.178.65:3000/api/tasks"
 
     # Sending get request and saving the response as response object
     response = requests.get(url)
@@ -100,8 +119,10 @@ def get_tasks_data():
 def create_handlers(list_of_tasks):
     for task in list_of_tasks:
         # Define the function string using task name
-        function_string = f"def handle_{task['name']}(call):\
-            print('Doing {task['name']} stuff...)')"
+        function_string = f"def handle_{task['name']}(call):\n\
+            print('Doing {task['name']} stuff...')\n\
+            print('Task ID: {task['id']}')\n\
+            # For later on: > API: URL/tasks/execute/:{task['id']})"
 
         # Execute the function string
         exec(function_string, globals())
