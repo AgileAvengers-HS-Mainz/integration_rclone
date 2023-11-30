@@ -56,6 +56,8 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     await async_unload_entry(hass, entry)
     await async_setup_entry(hass, entry)
 
+# Registering new services in the integration using the setup function.
+# Services can be called from automations and from the service "Developer tools" in the frontend.
 def setup(hass, config):
     """Set up is called when Home Assistant is loading our component."""
 
