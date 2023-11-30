@@ -65,13 +65,10 @@ def setup(hass, config):
     # Creating a service for each task
     create_handlers(tasks_data)
 
-    def handle_hello(call):
-        """Handle the service call."""
-
     # Registering the services
-    hass.services.register(DOMAIN, "hello", handle_hello)
     for task in tasks_data:
-        hass.services.register(DOMAIN, task["name"], "handle_" + task["name"])
+        hass.services.register(DOMAIN, task["name"],
+                               globals()["handle_" + task["name"]])
 
     # Return boolean to indicate that initialization was successful.
     return True
@@ -89,8 +86,9 @@ def get_tasks_data():
     parsed_tasks_data = json.loads(response.text)
 
     # Replacing any spaces with underscores in each task name
+    # and making sure they are all in lower case
     for task in parsed_tasks_data:
-        task["name"] = task["name"].replace(' ', '_')
+        task["name"] = task["name"].replace(' ', '_').lower()
 
     return parsed_tasks_data
 
@@ -100,7 +98,8 @@ def get_tasks_data():
 def create_handlers(list_of_tasks):
     for task in list_of_tasks:
         # Define the function string using task name
-        function_string = f"def handle_{task['name']}(call):\n    print('Hello!')"
+        function_string = f"def handle_{task['name']}(call):\
+            print('Doing {task['name']} stuff...)')"
 
         # Execute the function string
         exec(function_string, globals())
