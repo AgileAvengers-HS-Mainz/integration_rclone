@@ -2,10 +2,10 @@
   "domain": "integration_rclone",
   "name": "Integration rclone",
   "codeowners": [
-    "@AgileAvengers-FH-Mainz",
-    "bastianjakobi",
-    "UnnamedPl4yer",
-    "karim-ouhammi"
+    "@AgileAvengers-HS-Mainz",
+    "@bastianjakobi",
+    "@UnnamedPl4yer",
+    "@karim-ouhammi"
   ],
   "config_flow": true,
   "documentation": "https://github.com/AgileAvengers-FH-Mainz/integration_rclone",
