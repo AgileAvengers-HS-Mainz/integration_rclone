@@ -98,8 +98,11 @@ def setup(hass, config):
     return True
 
 def get_tasks_data(url):
-    """Get tasks data using API"""
+    """Get tasks data using API.
 
+    Args:
+        url: The URL of the Endpoint-API.
+    """
     # Sending get request and saving the response as response object
     response = requests.get(url)
 
@@ -113,16 +116,29 @@ def get_tasks_data(url):
 
     return parsed_tasks_data
 
-# Creating service handlers dynamically usinc exec and globals()
-# It's generally not recommended due to security risks associated with
-# executing arbitrary code. However, I will go for this approach for now.
 def create_handlers(list_of_tasks):
+    """Create service handlers dynamically for each task usinc exec and globals().
+
+    It's generally not recommended due to security risks associated with
+    executing arbitrary code. However, I will go for this approach for now.
+    Args:
+        list_of_tasks: A list of json objects of tasks.
+    """
     for task in list_of_tasks:
         # Define the function string using task name
         function_string = f"def handle_{task['name']}(call):\n\
-            print('Doing {task['name']} stuff...')\n\
-            print('Task ID: {task['id']}')\n\
-            # For later on: > API: URL/tasks/execute/:{task['id']})"
+            exec_task({task})"
 
         # Execute the function string
         exec(function_string, globals())
+
+def exec_task(task):
+    """Function, that is called when the task is executed.
+
+    This methode is used to simplify the function string.
+    Args:
+        task: Json object of a task.
+    """
+    print(f"Doing {task['name']} stuff...")
+    print(f"Task ID: {task['id']}")
+    # For later on: > API: URL/tasks/execute/:{task['id']})"
