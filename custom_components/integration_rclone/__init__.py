@@ -5,7 +5,7 @@ https://github.com/AgileAvengers-FH-Mainz/integration_rclone
 """
 from __future__ import annotations
 import json
-import time
+import logging
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
@@ -133,12 +133,12 @@ def create_handlers(list_of_tasks):
         exec(function_string, globals())
 
 def exec_task(task):
-    """Function, that is called when the task is executed.
+    """Call when the task is executed.
 
     This methode is used to simplify the function string.
     Args:
         task: Json object of a task.
     """
-    print(f"Doing {task['name']} stuff...")
-    print(f"Task ID: {task['id']}")
+    logging.info(f"Doing {task['name']} stuff...")
+    logging.info(f"Task ID: {task['id']}")
     # For later on: > API: URL/tasks/execute/:{task['id']})"
