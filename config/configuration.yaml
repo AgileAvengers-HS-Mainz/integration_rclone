@@ -10,3 +10,5 @@ logger:
 # Configuration for integration_rclone entry
 integration_rclone:
   url: http://192.168.178.65:3000/api/tasks
+
+automation: !include automations.yaml
