@@ -1,0 +1,26 @@
+[
+    {
+        "id": 1,
+        "name": "my custom mounting task",
+        "type": "mount",
+        "description": "mount my data",
+        "sourceConfig": "smb",
+        "sourceType": "SMB",
+        "sourcePath": "/dir",
+        "destinationConfig": "dropbox",
+        "destinationType": "Dropbox",
+        "destinationPath": "/home"
+    },
+    {
+        "id": 2,
+        "name": "Copy",
+        "type": "copy",
+        "description": "copy file.txt",
+        "sourceConfig": "smb",
+        "sourceType": "SMB",
+        "sourcePath": "/home/file.txt",
+        "destinationConfig": "GoogleDrive",
+        "destinationType": "GoogleDrive",
+        "destinationPath": "/"
+    }
+]
