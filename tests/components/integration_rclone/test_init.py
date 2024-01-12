@@ -1,6 +1,5 @@
 """Test integration_rclone component setup process."""
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_registry as er
 from homeassistant.config_entries import ConfigEntry
 
 from unittest.mock import patch
@@ -8,7 +7,7 @@ from unittest.mock import patch
 from custom_components.integration_rclone import (
     async_setup_entry,
     async_unload_entry,
-    async_reload_entry
+    setup
 )
 
 from custom_components.integration_rclone.const import DOMAIN as DOMAIN_INTEGRATION_RCLONE
@@ -18,9 +17,9 @@ async def setup_entry(hass, entry):
     with patch("async_setup", return_value=True):
         assert await async_setup_entry(hass, entry) is True
 
-async def test_async_setup(hass):
+async def test_setup(hass, config):
     """Test the component gets setup."""
-    assert await async_setup_component(hass, DOMAIN_INTEGRATION_RCLONE, {}) is True
+    assert await setup(hass, DOMAIN_INTEGRATION_RCLONE, {}) is True
 
 async def test_setup_entry_successful(
     hass: HomeAssistant, entry: ConfigEntry
