@@ -6,4 +6,3 @@ LOGGER: Logger = getLogger(__package__)
 NAME = "Integration rclone"
 DOMAIN = "integration_rclone"
 VERSION = "0.0.0"
-ATTRIBUTION = "Data provided by http://jsonplaceholder.typicode.com/"
