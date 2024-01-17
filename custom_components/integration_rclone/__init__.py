@@ -16,6 +16,9 @@ import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
 
 import requests
+import time
+from homeassistant.core import callback
+
 
 from .api import IntegrationRcloneApiClient
 from .const import DOMAIN
@@ -33,6 +36,8 @@ CONF_URL = "url"
 
 STATE_RUNNING = "Running"
 STATE_DONE = "Done"
+
+WAIT_SECONDS = 5
 
 # Checking if all mandatory configuration variables are provided ('url' in our case).
 # If not, the setup of our integration should fail.
@@ -80,6 +85,13 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
 def setup(hass, config):
     """Set up is called when Home Assistant is loading our component."""
 
+    # This service can be called to trigger a reload of the configuration,
+    # allowing dynamic updates without the need for restarting the application.
+    def handle_reload_config(call):
+        setup(hass, config)
+
+    hass.services.register(DOMAIN, "reload_config", handle_reload_config)
+
     # API-endpoint from the configuration.yaml file
     url = config[DOMAIN].get(CONF_URL)
 
@@ -87,15 +99,51 @@ def setup(hass, config):
     tasks_data = get_tasks_data(url)
 
     # Creating a service for each task
-    create_handlers(tasks_data)
+    create_handlers(tasks_data, url)
 
     # Registering the services
-    for task in tasks_data:
-        hass.services.register(DOMAIN, task["name"],
-                               globals()["handle_" + task["name"]])
+    register_services(hass, tasks_data)
 
     # Return boolean to indicate that initialization was successful.
     return True
+
+def register_services(hass, list_of_tasks):
+    """Register a service for each task."""
+
+    for task in list_of_tasks:
+        hass.services.register(DOMAIN, task["name"],
+                               globals()["handle_" + task["name"]])
+
+def create_handlers(list_of_tasks, url):
+    """Create service handlers dynamically for each task usinc exec and globals().
+
+    It's generally not recommended due to security risks associated with
+    executing arbitrary code. However, I will go for this approach for now.
+    Args:
+        list_of_tasks: A list of json objects of tasks.
+    """
+    for task in list_of_tasks:
+        # Define the function string using task name
+        function_string = f"def handle_{task['name']}(call):\n\
+            exec_task({task}, '{url}')"
+
+        # Execute the function string
+        exec(function_string, globals())
+
+def exec_task(task, url):
+    """Call when the task is executed.
+
+    This methode is used to simplify the function string.
+    Args:
+        task: Json object of a task.
+    """
+    logging.info(f"Executing Task, id: {task['id']}, name: {task['name']}")
+
+    try:
+        response = requests.post(f"{url}/api/tasks/{task['id']}/run")
+        logging.info(f"Task done. Response: " + response.text)
+    except Exception as error:
+        logging.error(f"Something went wrong. Error: " + error)
 
 def get_tasks_data(url):
     """Get tasks data using API.
@@ -103,6 +151,7 @@ def get_tasks_data(url):
     Args:
         url: The URL of the Endpoint-API.
     """
+
     # Sending get request and saving the response as response object
     response = requests.get(url)
 
@@ -115,30 +164,3 @@ def get_tasks_data(url):
         task["name"] = task["name"].replace(' ', '_').lower()
 
     return parsed_tasks_data
-
-def create_handlers(list_of_tasks):
-    """Create service handlers dynamically for each task usinc exec and globals().
-
-    It's generally not recommended due to security risks associated with
-    executing arbitrary code. However, I will go for this approach for now.
-    Args:
-        list_of_tasks: A list of json objects of tasks.
-    """
-    for task in list_of_tasks:
-        # Define the function string using task name
-        function_string = f"def handle_{task['name']}(call):\n\
-            exec_task({task})"
-
-        # Execute the function string
-        exec(function_string, globals())
-
-def exec_task(task):
-    """Call when the task is executed.
-
-    This methode is used to simplify the function string.
-    Args:
-        task: Json object of a task.
-    """
-    logging.info(f"Doing {task['name']} stuff...")
-    logging.info(f"Task ID: {task['id']}")
-    # For later on: > API: URL/tasks/execute/:{task['id']})"
