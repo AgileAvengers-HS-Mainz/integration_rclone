@@ -16,8 +16,6 @@ import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
 
 import requests
-import time
-from homeassistant.core import callback
 
 from .api import IntegrationRcloneApiClient
 from .const import DOMAIN
@@ -110,6 +108,7 @@ def create_handlers(list_of_tasks, url):
     executing arbitrary code. However, I will go for this approach for now.
     Args:
         list_of_tasks: A list of json objects of tasks.
+        url: Addon Backend Endpoint.
     """
     for task in list_of_tasks:
         # Define the function string using task name
@@ -125,14 +124,15 @@ def exec_task(task, url):
     This methode is used to simplify the function string.
     Args:
         task: Json object of a task.
+        url: Addon Backend Endpoint.
     """
     logging.info(f"Executing Task, id: {task['id']}, name: {task['name']}")
 
     try:
         response = requests.post(f"{url}/api/tasks/{task['id']}/run")
-        logging.info(f"Task done. Response: " + response.text)
+        logging.info("Task done. Response: " + response.text)
     except Exception as error:
-        logging.error(f"Something went wrong. Error: " + error)
+        logging.error("Something went wrong. Error: " + error)
 
 def get_tasks_data(url):
     """Get tasks data using API.
