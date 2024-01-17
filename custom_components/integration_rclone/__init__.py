@@ -19,12 +19,9 @@ import requests
 import time
 from homeassistant.core import callback
 
-
 from .api import IntegrationRcloneApiClient
 from .const import DOMAIN
 from .coordinator import RcloneDataUpdateCoordinator
-
-
 
 PLATFORMS: list[Platform] = [
     Platform.SENSOR,
@@ -34,18 +31,12 @@ PLATFORMS: list[Platform] = [
 
 CONF_URL = "url"
 
-STATE_RUNNING = "Running"
-STATE_DONE = "Done"
-
-WAIT_SECONDS = 5
-
 # Checking if all mandatory configuration variables are provided ('url' in our case).
 # If not, the setup of our integration should fail.
 # We use voluptuous as a helper to achieve this.
 CONFIG_SCHEMA = vol.Schema(
     {DOMAIN: vol.Schema({vol.Required(CONF_URL): cv.string,})}, extra=vol.ALLOW_EXTRA
 )
-
 
 # https://developers.home-assistant.io/docs/config_entries_index/#setting-up-an-entry
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -67,13 +58,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     return True
 
-
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Handle removal of an entry."""
     if unloaded := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         hass.data[DOMAIN].pop(entry.entry_id)
     return unloaded
-
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload config entry."""
