@@ -129,7 +129,7 @@ def exec_task(task, url):
     logging.info(f"Executing Task, id: {task['id']}, name: {task['name']}")
 
     try:
-        response = requests.post(f"{url}/api/tasks/{task['id']}/run")
+        response = requests.post(f"{url}/{task['id']}/run")
         logging.info("Task done. Response: " + response.text)
     except Exception as error:
         logging.error("Something went wrong. Error: " + error)
