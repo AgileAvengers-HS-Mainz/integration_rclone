@@ -1,0 +1,9 @@
+- id: '1705451444975'
+  alias: auto_reload_config
+  description: This automation helps keeping the services up to date with the Tasks
+    in rclone-Addon backend, without the need to execute `reload_config` service manually.
+  trigger:
+  - platform: time_pattern
+    seconds: /5
+  action:
+  - service: integration_rclone.reload_config
